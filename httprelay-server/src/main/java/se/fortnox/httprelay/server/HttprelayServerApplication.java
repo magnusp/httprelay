@@ -1,4 +1,4 @@
-package se.fortnox.httprelay;
+package se.fortnox.httprelay.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
