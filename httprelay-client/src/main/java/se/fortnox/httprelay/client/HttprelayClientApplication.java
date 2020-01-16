@@ -37,18 +37,13 @@ public class HttprelayClientApplication {
     }
 
     @Bean
-    public ApplicationRunner consumer(Mono<RSocketRequester> requester) {
+    public ApplicationRunner consumer(Mono<RSocketRequester> requester, ClientController clientController) {
         return args -> {
             requester
-                    .flatMapMany(this::establish)
-                    .subscribe(log::info);
+                    .flatMapMany(clientController::establish)
+                    .subscribe();
         };
     }
 
-    private Flux<String> establish(RSocketRequester requester) {
-        return requester
-                .route("/lobby")
-                .data(DefaultPayload.create(""))
-                .retrieveFlux(String.class);
-    }
+
 }
