@@ -1,9 +1,5 @@
 package se.fortnox.httprelay.client;
 
-import io.rsocket.RSocket;
-import io.rsocket.util.DefaultPayload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,14 +9,10 @@ import org.springframework.messaging.rsocket.ClientRSocketFactoryConfigurer;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @SpringBootApplication
 public class HttprelayClientApplication {
-    private final Logger log = LoggerFactory.getLogger(HttprelayClientApplication.class);
-    private RSocket socket;
-
     public static void main(String[] args) {
         SpringApplication.run(HttprelayClientApplication.class, args);
     }
