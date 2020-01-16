@@ -25,6 +25,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <!-- docs: https://github.com/spring-projects/spring-framework/blob/v5.2.2.RELEASE/src/docs/asciidoc/rsocket.adoc -->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-rsocket</artifactId>
         </dependency>
