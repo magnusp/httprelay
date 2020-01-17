@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import se.fortnox.httprelay.server.entity.EventCallback;
 import se.fortnox.httprelay.server.entity.SlackUrlVerification;
 
 import java.nio.charset.StandardCharsets;
@@ -30,7 +31,7 @@ public class SlackController {
 	private final Jackson2JsonDecoder decoder;
 	private final Logger              log = LoggerFactory.getLogger(SlackController.class);
 	public static final ResolvableType RESOLVABLE_TYPE = forClass(SlackUrlVerification.class);
-	public static final ResolvableType STRING_RESOLVABLE_TYPE = forClass(String.class);
+	public static final ResolvableType EVENTCALLBACK_RESOLVABLE_TYPE = forClass(EventCallback.class);
 
 	@Autowired
 	public SlackController() {
@@ -45,7 +46,7 @@ public class SlackController {
 			.flatMap(body -> {
 
 				return Mono.first(
-					handleUrlVerification(webExchange, body),
+					//handleUrlVerification(webExchange, body),
 					handleWebhookCall(webExchange, body)
 				)
 					.then(defer(() -> {
@@ -56,9 +57,15 @@ public class SlackController {
 	}
 
 	private Mono<Void> handleWebhookCall(ServerWebExchange webExchange, DataBuffer body) {
-		String webHookBody = StandardCharsets.UTF_8.decode(body.asByteBuffer()).toString();
-		log.info(webHookBody);
-		return Mono.empty();
+		//String webHookBody = StandardCharsets.UTF_8.decode(body.asByteBuffer()).toString();
+		//log.info(webHookBody);
+		return decoder
+			.decodeToMono(just(body), EVENTCALLBACK_RESOLVABLE_TYPE, MediaType.APPLICATION_JSON, Collections.emptyMap()).cast(EventCallback.class)
+			.doOnNext(eventCallback -> {
+				log.info(eventCallback.getEvent().getType());
+			})
+			.then()
+			.onErrorResume(throwable -> Mono.empty());
 	}
 
 	private Mono<Void> handleUrlVerification(ServerWebExchange webExchange, DataBuffer body) {
