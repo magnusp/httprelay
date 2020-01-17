@@ -1,5 +1,6 @@
 package se.fortnox.httprelay.server;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class SlackController {
 
 	private final Jackson2JsonDecoder decoder;
 	private final Logger              log = LoggerFactory.getLogger(SlackController.class);
+	public static final ResolvableType RESOLVABLE_TYPE = forClass(SlackUrlVerification.class);
+	public static final ResolvableType STRING_RESOLVABLE_TYPE = forClass(String.class);
 
 	@Autowired
 	public SlackController() {
@@ -40,20 +43,32 @@ public class SlackController {
 			.getBody()
 			.next()
 			.flatMap(body -> {
-				ResolvableType      elementType = forClass(SlackUrlVerification.class);
 
-				return decoder
-					.decodeToMono(just(body), elementType, MediaType.APPLICATION_JSON, Collections.emptyMap()).cast(SlackUrlVerification.class)
-					.flatMap(slackUrlVerification -> {
-						byte[]     bytes  = slackUrlVerification.getChallenge().getBytes(StandardCharsets.UTF_8);
-						DataBuffer buffer = webExchange.getResponse().bufferFactory().wrap(bytes);
-						return webExchange.getResponse().writeWith(Flux.just(buffer));
-					})
-					.onErrorResume(throwable -> Mono.empty())
-					.switchIfEmpty(defer(() -> {
+				return Mono.first(
+					handleUrlVerification(webExchange, body),
+					handleWebhookCall(webExchange, body)
+				)
+					.then(defer(() -> {
 						webExchange.getResponse().setStatusCode(HttpStatus.OK);
 						return Mono.empty();
 					}));
 			});
+	}
+
+	private Mono<Void> handleWebhookCall(ServerWebExchange webExchange, DataBuffer body) {
+		String webHookBody = StandardCharsets.UTF_8.decode(body.asByteBuffer()).toString();
+		log.info(webHookBody);
+		return Mono.empty();
+	}
+
+	private Mono<Void> handleUrlVerification(ServerWebExchange webExchange, DataBuffer body) {
+		return decoder
+			.decodeToMono(just(body), RESOLVABLE_TYPE, MediaType.APPLICATION_JSON, Collections.emptyMap()).cast(SlackUrlVerification.class)
+			.flatMap(slackUrlVerification -> {
+				byte[]     bytes  = slackUrlVerification.getChallenge().getBytes(StandardCharsets.UTF_8);
+				DataBuffer buffer = webExchange.getResponse().bufferFactory().wrap(bytes);
+				return webExchange.getResponse().writeWith(Flux.just(buffer));
+			})
+			.onErrorResume(throwable -> Mono.empty());
 	}
 }
