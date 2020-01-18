@@ -1,15 +1,12 @@
 package se.fortnox.httprelay.server;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -28,15 +25,10 @@ import static reactor.core.publisher.Mono.just;
 @RestController
 public class SlackController {
 
-	private final Jackson2JsonDecoder decoder;
+	private final Jackson2JsonDecoder decoder = new Jackson2JsonDecoder();
 	private final Logger              log = LoggerFactory.getLogger(SlackController.class);
 	public static final ResolvableType RESOLVABLE_TYPE = forClass(SlackUrlVerification.class);
 	public static final ResolvableType EVENTCALLBACK_RESOLVABLE_TYPE = forClass(EventCallback.class);
-
-	@Autowired
-	public SlackController() {
-		this.decoder = new Jackson2JsonDecoder();
-	}
 
 	@PostMapping("/webhook")
 	public Mono<Void> acceptWebHook(ServerWebExchange webExchange) {
@@ -45,8 +37,8 @@ public class SlackController {
 			.next()
 			.flatMap(body -> {
 
-				return Mono.first(
-					//handleUrlVerification(webExchange, body),
+				return Flux.merge(
+					handleUrlVerification(webExchange, body),
 					handleWebhookCall(webExchange, body)
 				)
 					.then(defer(() -> {
