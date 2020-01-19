@@ -1,7 +1,6 @@
 package se.fortnox.httprelay.client;
 
 import io.rsocket.util.DefaultPayload;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;

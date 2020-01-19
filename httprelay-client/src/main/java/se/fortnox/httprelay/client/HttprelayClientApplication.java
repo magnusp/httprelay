@@ -30,11 +30,9 @@ public class HttprelayClientApplication {
 
     @Bean
     public ApplicationRunner consumer(Mono<RSocketRequester> requester, ClientController clientController) {
-        return args -> {
-            requester
-                    .flatMapMany(clientController::establish)
-                    .subscribe();
-        };
+        return args -> requester
+                .flatMapMany(clientController::establish)
+                .subscribe();
     }
 
 

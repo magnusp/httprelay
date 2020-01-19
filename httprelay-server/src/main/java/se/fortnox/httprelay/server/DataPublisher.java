@@ -10,11 +10,12 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static java.util.Date.from;
 
 @RestController
 public class DataPublisher {
@@ -26,12 +27,8 @@ public class DataPublisher {
 	    this.datastream = EmitterProcessor
 		    .<DataFrame>create();
 	    this.datastream
-                .flatMap(dataFrame -> {
-                    return Flux.fromIterable(this.clients)
-                            .flatMap(requester -> {
-                                return sendDataFrame(requester, dataFrame);
-                            });
-                })
+                .flatMap(dataFrame -> Flux.fromIterable(this.clients)
+                        .flatMap(requester -> sendDataFrame(requester, dataFrame)))
                 .subscribe();
     }
 
@@ -44,7 +41,7 @@ public class DataPublisher {
 
     @GetMapping("/trigger")
     public Mono<Void> trigger() {
-    	datastream.onNext(new DataFrame("Value: " + Date.from(Instant.now())));
+    	datastream.onNext(new DataFrame("Value: " + from(Instant.now())));
     	return Mono.empty();
     }
 
@@ -53,9 +50,7 @@ public class DataPublisher {
     	clients.offer(requester);
         return Flux
                 .interval(Duration.ofSeconds(5))
-                .flatMap(aLong -> {
-                    return Mono.just("Clients: " + clients.size());
-                })
+                .flatMap(aLong -> Mono.just("Clients: " + clients.size()))
                 .doOnTerminate(() -> {
                     log.info("Server error while streaming data to the client");
                     clients.remove(requester);
