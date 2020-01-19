@@ -1,5 +1,7 @@
 POST http://localhost:8080/webhook
 Content-Type: application/json
+X-Slack-Request-Timestamp: 1
+X-Slack-Signature: 1
 
 {
   "token": "Jhj5dZrVaK7ZwHHjRyZWjbDl",
