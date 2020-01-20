@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
-@Component
+
 @Order(HIGHEST_PRECEDENCE)
 public class SlackAuthenticator implements WebFilter {
     private final SecretKeySpec secretKey;

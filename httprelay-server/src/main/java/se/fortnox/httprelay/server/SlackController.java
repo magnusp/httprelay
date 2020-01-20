@@ -17,7 +17,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
 
-@RestController
+
 public class SlackController {
     private static final DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
 
