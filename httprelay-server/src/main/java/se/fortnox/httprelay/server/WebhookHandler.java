@@ -20,13 +20,17 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.util.Collections;
 
+import static org.springframework.web.reactive.function.server.ServerResponse.badRequest;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 import static org.springframework.web.reactive.function.server.ServerResponse.status;
+import static reactor.core.publisher.Mono.just;
 
 @Component
 public class WebhookHandler implements HandlerFunction<ServerResponse> {
+    private final Logger log = LoggerFactory.getLogger(SignatureValidator.class);
     private final Jackson2JsonDecoder decoder = new Jackson2JsonDecoder();
 
     private final SignatureValidator signatureValidator;
@@ -44,17 +48,29 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
                 .bodyToMono(DataBuffer.class)
                 .flatMap(dataBuffer -> {
                     HttpHeaders httpHeaders = request.headers().asHttpHeaders();
+                    // TODO Handle missing headers/values
                     String requestTimestamp = httpHeaders.getFirst("X-Slack-Request-Timestamp");
                     byte[] signature = httpHeaders.getFirst("X-Slack-Signature")
                             .replace("v0=", "")
                             .getBytes(StandardCharsets.UTF_8);
 
-                    return signatureValidator.validate(signature, digest -> {
-                        digest.update(("v0:" + requestTimestamp + ":").getBytes(StandardCharsets.UTF_8));
-                        digest.update(dataBuffer.asByteBuffer().asReadOnlyBuffer());
-                    }).switchIfEmpty(respondToEvent(dataBuffer));
-                })
-                .cast(ServerResponse.class);
+                    boolean isValidSignature;
+                    try {
+                        isValidSignature = signatureValidator.validate(signature, digest -> {
+                            digest.update(("v0:" + requestTimestamp + ":").getBytes(StandardCharsets.UTF_8));
+                            digest.update(dataBuffer.asByteBuffer().asReadOnlyBuffer());
+                        });
+                    } catch (InvalidKeyException e) {
+                        log.error("Error setting up algorithm", e);
+                        return status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                    if (!isValidSignature) {
+                        return badRequest()
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(just("Invalid signature"), String.class);
+                    }
+                    return respondToEvent(dataBuffer);
+                });
     }
 
     private Mono<ServerResponse> respondToEvent(DataBuffer dataBuffer) {

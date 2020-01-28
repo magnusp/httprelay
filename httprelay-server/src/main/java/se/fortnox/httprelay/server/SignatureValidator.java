@@ -1,14 +1,8 @@
 package se.fortnox.httprelay.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Mono;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,13 +12,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Consumer;
 
-import static org.springframework.web.reactive.function.server.ServerResponse.badRequest;
-import static org.springframework.web.reactive.function.server.ServerResponse.status;
-import static reactor.core.publisher.Mono.just;
-
 @Component
 public class SignatureValidator {
-    private final Logger log = LoggerFactory.getLogger(SignatureValidator.class);
+    private static final Mac mac;
+
+    static {
+        try {
+            mac = Mac.getInstance("HmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private SecretKeySpec secretKey;
 
     public SignatureValidator() {
@@ -48,23 +47,21 @@ public class SignatureValidator {
         return hexString.toString();
     }
 
-    public Mono<ServerResponse> validate(byte[] signature, Consumer<Mac> digester) {
-        final Mac digest;
+    private static Mac getMac() {
         try {
-            digest = Mac.getInstance("HmacSHA256");
-            digest.init(secretKey);
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error("Error setting up algorithm", e);
-            return status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return (Mac) mac.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
         }
-        digester.accept(digest);
+    }
 
-        if (!verifySignature(digest, signature)) {
-            return badRequest()
-                    .contentType(MediaType.TEXT_PLAIN)
-                    .body(just("Invalid signature"), String.class);
-        }
-        return Mono.empty();
+    public boolean validate(byte[] signature, Consumer<Mac> digester) throws InvalidKeyException {
+        final Mac mac = getMac();
+
+        mac.init(secretKey);
+        digester.accept(mac);
+
+        return verifySignature(mac, signature);
     }
 
     private boolean verifySignature(Mac digest, byte[] signature) {
