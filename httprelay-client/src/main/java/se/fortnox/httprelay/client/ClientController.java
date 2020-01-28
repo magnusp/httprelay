@@ -15,9 +15,6 @@ public class ClientController {
     private final Logger log = LoggerFactory.getLogger(ClientController.class);
     private RSocket rsocket;
 
-    public ClientController() {
-    }
-
     @PreDestroy
     void destroy() {
         if (rsocket != null) {

@@ -30,7 +30,7 @@ import static reactor.core.publisher.Mono.just;
 
 @Component
 public class WebhookHandler implements HandlerFunction<ServerResponse> {
-    private final Logger log = LoggerFactory.getLogger(SignatureValidator.class);
+    private final Logger log = LoggerFactory.getLogger(WebhookHandler.class);
     private final Jackson2JsonDecoder decoder = new Jackson2JsonDecoder();
 
     private final SignatureValidator signatureValidator;
@@ -50,9 +50,15 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
                 .bodyToMono(DataBuffer.class)
                 .flatMap(dataBuffer -> {
                     HttpHeaders httpHeaders = request.headers().asHttpHeaders();
-                    // TODO Handle missing headers/values
+
                     String requestTimestamp = httpHeaders.getFirst("X-Slack-Request-Timestamp");
-                    byte[] signature = httpHeaders.getFirst("X-Slack-Signature")
+                    String stringSignature = httpHeaders.getFirst("X-Slack-Signature");
+                    if(requestTimestamp == null || stringSignature == null) {
+                        return badRequest()
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body(just("Missing required headers"), String.class);
+                    }
+                    byte[] signature = stringSignature
                             .replace("v0=", "")
                             .getBytes(StandardCharsets.UTF_8);
 

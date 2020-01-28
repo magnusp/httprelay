@@ -47,7 +47,7 @@ public class SignatureValidator {
         return hexString.toString();
     }
 
-    private static Mac getMac() {
+    private static Mac createMac() {
         try {
             return (Mac) mac.clone();
         } catch (CloneNotSupportedException e) {
@@ -56,12 +56,12 @@ public class SignatureValidator {
     }
 
     public boolean validate(byte[] signature, Consumer<Mac> digester) throws InvalidKeyException {
-        final Mac mac = getMac();
+        final Mac digest = createMac();
 
-        mac.init(secretKey);
-        digester.accept(mac);
+        digest.init(secretKey);
+        digester.accept(digest);
 
-        return verifySignature(mac, signature);
+        return verifySignature(digest, signature);
     }
 
     private boolean verifySignature(Mac digest, byte[] signature) {
