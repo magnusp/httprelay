@@ -35,11 +35,13 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
 
     private final SignatureValidator signatureValidator;
     private final ObjectMapper objectMapper;
+    private final DataPublisher dataPublisher;
 
     @Autowired
-    public WebhookHandler(SignatureValidator signatureValidator, ObjectMapper objectMapper) {
+    public WebhookHandler(SignatureValidator signatureValidator, ObjectMapper objectMapper, DataPublisher dataPublisher) {
         this.signatureValidator = signatureValidator;
         this.objectMapper = objectMapper;
+        this.dataPublisher = dataPublisher;
     }
 
     @Override
@@ -88,6 +90,7 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
         }
         return Mono.fromCallable(() -> objectMapper.writeValueAsBytes(requestBody)) // Blocking call
                 .subscribeOn(Schedulers.boundedElastic())
+                .doOnNext(dataPublisher::provide)
                 .flatMap(bytes -> ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(BodyInserters.fromValue(bytes)));
