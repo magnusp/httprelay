@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "slack.shared_secret",
+      "type": "java.lang.String",
+      "description": "Description for slack.shared_secret."
+    },
+    {
+      "name": "slack.validate_signature",
+      "type": "java.lang.String",
+      "description": "Description for slack.validate_signature."
+    }
+  ] }

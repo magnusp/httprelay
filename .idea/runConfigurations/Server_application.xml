@@ -4,6 +4,9 @@
     <option name="SPRING_BOOT_MAIN_CLASS" value="se.fortnox.httprelay.server.HttprelayServerApplication" />
     <option name="DEBUG_MODE" value="true" />
     <option name="ALTERNATIVE_JRE_PATH" />
+    <envs>
+      <env name="SLACK_VALIDATE_SIGNATURE" value="false" />
+    </envs>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
