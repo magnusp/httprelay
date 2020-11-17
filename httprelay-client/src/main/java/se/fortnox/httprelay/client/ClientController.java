@@ -33,7 +33,7 @@ public class ClientController {
         }
     }
 
-    protected Flux<String> establish(RSocketRequester requester) {
+    protected Flux<Void> establish(RSocketRequester requester) {
         rsocket = requester.rsocket();
 
         return requester
@@ -43,12 +43,7 @@ public class ClientController {
                     SenderRecord<Integer, byte[], Integer> message = SenderRecord.create(new ProducerRecord<>("hello", s), 1);
                     return kafkaSender
                             .send(Mono.just(message))
-                            .doOnNext(senderResult -> log.info(senderResult.toString()))
-                            .then(Mono.just(s));
-                })
-                .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
-
-                .doOnNext(log::info);
-
+                            .then();
+                });
     }
 }

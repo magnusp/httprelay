@@ -3,6 +3,7 @@ package se.fortnox.httprelay.client;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.rsocket.ClientRSocketFactoryConfigurer;
@@ -12,9 +13,9 @@ import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHa
 import reactor.core.publisher.Mono;
 
 @SpringBootApplication
-public class HttprelayClientApplication {
+public class HttpRelayClient {
     public static void main(String[] args) {
-        SpringApplication.run(HttprelayClientApplication.class, args);
+        SpringApplication.run(HttpRelayClient.class, args);
     }
 
     @Bean
@@ -29,6 +30,11 @@ public class HttprelayClientApplication {
     }
 
     @Bean
+    @ConditionalOnProperty(
+            prefix = "application.runner",
+            value = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     public ApplicationRunner consumer(Mono<RSocketRequester> requester, ClientController clientController) {
         return args -> requester
                 .flatMapMany(clientController::establish)
