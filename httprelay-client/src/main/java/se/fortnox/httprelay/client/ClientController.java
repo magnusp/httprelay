@@ -36,7 +36,7 @@ public class ClientController {
                 .route("/events")
                 .retrieveFlux(byte[].class)
                 .flatMap(s -> {
-                    SenderRecord<Integer, byte[], Integer> message = SenderRecord.create(new ProducerRecord<>("hello", s), 1);
+                    SenderRecord<Integer, byte[], Integer> message = SenderRecord.create(new ProducerRecord<>("slacksink", s), 1);
                     return kafkaSender
                             .send(Mono.just(message))
                             .then();

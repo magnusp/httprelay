@@ -59,11 +59,8 @@ public class HttpRelayClient {
 		value = "enabled",
 		havingValue = "true",
 		matchIfMissing = true)
-	public ApplicationRunner consumer(Mono<RSocketRequester> requester, ClientController clientController) {
-		return args -> requester
-			.flatMapMany(clientController::establish)
-			.retry()
-			.subscribe();
+	public ApplicationRunner consumer(RSocketRequester requester, ClientController clientController) {
+		return args -> clientController.establish(requester).subscribe();
 	}
 
 }
