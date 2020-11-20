@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Client application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="httprelay-client" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="se.fortnox.httprelay.client.HttprelayClientApplication" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="se.fortnox.httprelay.client.HttpRelayClient" />
     <option name="DEBUG_MODE" value="true" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <method v="2">

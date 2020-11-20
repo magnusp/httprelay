@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DataForwarder {
     private final Logger log = LoggerFactory.getLogger(DataForwarder.class);
     private final DataPublisher dataPublisher;
-    private Queue<RSocketRequester> clients = new ConcurrentLinkedQueue<>();
 
     @Autowired
     public DataForwarder(DataPublisher dataPublisher) {
@@ -24,16 +23,13 @@ public class DataForwarder {
 
     @MessageMapping("/events")
     public Flux<byte[]> events(RSocketRequester requester) {
-        clients.offer(requester);
         return dataPublisher
                 .stream()
                 .doOnTerminate(() -> {
                     log.info("Server error while streaming data to the client");
-                    clients.remove(requester);
                 })
                 .doOnCancel(() -> {
                     log.info("Connection closed by the client");
-                    clients.remove(requester);
                 });
     }
 }
