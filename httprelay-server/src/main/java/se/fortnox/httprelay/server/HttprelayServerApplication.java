@@ -3,7 +3,6 @@ package se.fortnox.httprelay.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -20,12 +19,6 @@ public class HttprelayServerApplication {
 	@Bean
 	RouterFunction<ServerResponse> configureRouter(WebhookHandler webhookHandler) {
 		return route(POST("/webhook"), webhookHandler::handle);
-	}
-
-
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer placeHolderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
 	}
 
 }

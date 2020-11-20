@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @WebFluxTest
 @TestPropertySource(properties = {"SLACK_SHARED_SECRET = stubSecret"})
-@Import(WebhookHandler.class)
+@Import({WebhookHandler.class, DataForwarder.class, DataPublisher.class})
 public class SlackControllerTest {
 
     @Autowired

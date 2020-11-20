@@ -2,8 +2,6 @@ package se.fortnox.httprelay.client;
 
 import io.rsocket.RSocket;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.stereotype.Controller;
@@ -13,11 +11,9 @@ import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
 
 import javax.annotation.PreDestroy;
-import java.nio.charset.StandardCharsets;
 
 @Controller
 public class ClientController {
-    private final Logger log = LoggerFactory.getLogger(ClientController.class);
     private final KafkaSender<Integer, byte[]> kafkaSender;
     private RSocket rsocket;
 
