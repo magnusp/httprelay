@@ -1,0 +1,43 @@
+POST https://slack.com/api/chat.postMessage
+Content-Type: application/json; charset=utf-8
+Authorization: Bearer {{slack_bearer_token}}
+
+{
+  "channel": "{{interactive_message_channel}}",
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Proceed with combobulation?"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": "Approve"
+          },
+          "style": "primary",
+          "value": "click_me_123"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "emoji": true,
+            "text": "Deny"
+          },
+          "style": "danger",
+          "value": "click_me_123"
+        }
+      ]
+    }
+  ]
+}
+
+###
