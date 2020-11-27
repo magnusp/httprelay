@@ -8,9 +8,6 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 @RestController
 public class DataForwarder {
     private final Logger log = LoggerFactory.getLogger(DataForwarder.class);

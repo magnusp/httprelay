@@ -2,11 +2,14 @@ package se.fortnox.httprelay.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.util.Collections;
+import java.util.Objects;
 
 import static org.springframework.web.reactive.function.server.ServerResponse.badRequest;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
@@ -36,18 +40,28 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
     private final SignatureValidator signatureValidator;
     private final ObjectMapper objectMapper;
     private final DataPublisher dataPublisher;
+    private final DataBufferFactory dataBufferFactory;
 
     @Autowired
     public WebhookHandler(SignatureValidator signatureValidator, ObjectMapper objectMapper, DataPublisher dataPublisher) {
         this.signatureValidator = signatureValidator;
         this.objectMapper = objectMapper;
         this.dataPublisher = dataPublisher;
+        this.dataBufferFactory = new DefaultDataBufferFactory();
     }
 
+    @NotNull
     @Override
     public Mono<ServerResponse> handle(ServerRequest request) {
-        return request
-                .bodyToMono(DataBuffer.class)
+        Mono<DataBuffer> bodyProcessor = request.headers().contentType().map(mediaType -> {
+            if (mediaType.equals(MediaType.APPLICATION_FORM_URLENCODED)) {
+                return request.formData()
+                        .map(formData -> dataBufferFactory.wrap(Objects.requireNonNull(formData.getFirst("payload")).getBytes(StandardCharsets.UTF_8)));
+            }
+            return null;
+        }).orElse(request.bodyToMono(DataBuffer.class));
+
+        return bodyProcessor
                 .flatMap(dataBuffer -> {
                     HttpHeaders httpHeaders = request.headers().asHttpHeaders();
 
