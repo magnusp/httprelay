@@ -1,5 +1,6 @@
 package se.fortnox.httprelay.client;
 
+import io.rsocket.metadata.WellKnownMimeType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -9,8 +10,16 @@ import org.springframework.boot.rsocket.context.LocalRSocketServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
+import org.springframework.security.config.annotation.rsocket.EnableRSocketSecurity;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,6 +39,8 @@ import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 class ClientControllerTest {
+    private static final MimeType SIMPLE_AUTH = MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString());
+
     @Autowired
     ClientController clientController;
 
@@ -50,7 +61,11 @@ class ClientControllerTest {
 
     @Test
     void shouldPublishMessageToKafka(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port) {
-        Mono<RSocketRequester> requester = builder.connectTcp("localhost", port);
+        UsernamePasswordMetadata user = new UsernamePasswordMetadata("user", "user");
+
+        Mono<RSocketRequester> requester = builder
+                .setupMetadata(user, SIMPLE_AUTH)
+                .connectTcp("localhost", port);
         requester.flux().flatMap(rSocketRequester -> clientController.establish(rSocketRequester))
                 .as(StepVerifier::create)
                 .verifyComplete();
@@ -62,7 +77,18 @@ class ClientControllerTest {
     }
 
     @TestConfiguration
+    @EnableRSocketSecurity
     public static class MyTestConfiguration {
+
+        @Bean
+        public MapReactiveUserDetailsService userDetailsService() {
+            UserDetails user = User.withDefaultPasswordEncoder() // TODO Dangerous
+                    .username("user")
+                    .password("user")
+                    .roles("USER")
+                    .build();
+            return new MapReactiveUserDetailsService(user);
+        }
 
         @RestController
         public static class TestableController {
