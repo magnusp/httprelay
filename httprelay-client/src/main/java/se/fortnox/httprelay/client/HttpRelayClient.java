@@ -15,7 +15,6 @@ import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder
 import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
@@ -24,20 +23,19 @@ import java.time.Duration;
 @SpringBootApplication
 public class HttpRelayClient {
 	private static final MimeType SIMPLE_AUTH = MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString());
+	private static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(Integer.MAX_VALUE, Duration.ofSeconds(1L));
 
 	public static void main(String[] args) {
 		SpringApplication.run(HttpRelayClient.class, args);
 	}
 
-	RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.fixedDelay(Integer.MAX_VALUE, Duration.ofSeconds(1L));
-
 	@Bean
 	public RSocketStrategies rSocketStrategies() {
 		return RSocketStrategies.builder()
-			.encoders(encoders -> {
-				encoders.add(new Jackson2CborEncoder());
-				encoders.add(new SimpleAuthenticationEncoder());
-			})
+				.encoders(encoders -> {
+					encoders.add(new Jackson2CborEncoder());
+					encoders.add(new SimpleAuthenticationEncoder());
+				})
 			.decoders(decoders -> decoders.add(new Jackson2CborDecoder()))
 			.build();
 	}
