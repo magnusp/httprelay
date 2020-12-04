@@ -67,7 +67,7 @@ public class WebhookHandler implements HandlerFunction<ServerResponse> {
 
                     String requestTimestamp = httpHeaders.getFirst("X-Slack-Request-Timestamp");
                     String stringSignature = httpHeaders.getFirst("X-Slack-Signature");
-                    if(requestTimestamp == null || stringSignature == null) {
+                    if (requestTimestamp == null || stringSignature == null) {
                         return badRequest()
                                 .contentType(MediaType.TEXT_PLAIN)
                                 .body(just("Missing required headers"), String.class);

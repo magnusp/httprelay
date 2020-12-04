@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>se.fortnox.httprelay</groupId>
-	<!-- https://spring.io/guides/gs/multi-module/ -->
-	<artifactId>httprelay-multimodule</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>se.fortnox.httprelay</groupId>
+    <!-- https://spring.io/guides/gs/multi-module/ -->
+    <artifactId>httprelay-multimodule</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>httprelay-parent</name>
-	<description>Demo project for Spring Boot</description>
+    <name>httprelay-parent</name>
+    <description>Demo project for Spring Boot</description>
 
-	<modules>
-		<module>httprelay-server</module>
-		<module>httprelay-client</module>
-	</modules>
+    <modules>
+        <module>httprelay-server</module>
+        <module>httprelay-client</module>
+    </modules>
 
 </project>
