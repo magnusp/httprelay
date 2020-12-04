@@ -12,14 +12,14 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @SpringBootApplication
 public class HttprelayServerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(HttprelayServerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(HttprelayServerApplication.class, args);
+    }
 
-	@Bean
-	RouterFunction<ServerResponse> configureRouter(WebhookHandler webhookHandler) {
-		return route(POST("/webhook"), webhookHandler::handle);
-	}
+    @Bean
+    RouterFunction<ServerResponse> configureRouter(WebhookHandler webhookHandler) {
+        return route(POST("/webhook"), webhookHandler::handle);
+    }
 
 
 }

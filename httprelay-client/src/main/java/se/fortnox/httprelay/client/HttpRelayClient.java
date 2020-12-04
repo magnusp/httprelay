@@ -27,9 +27,17 @@ public class HttpRelayClient {
     private final KafkaSender<Integer, byte[]> kafkaSender;
 
     @Autowired
-    public HttpRelayClient(RSocketRequester.Builder builder, KafkaSender<Integer, byte[]> kafkaSender, @Value("${httprelay.server.port}") Integer port) {
+    public HttpRelayClient(
+            RSocketRequester.Builder builder,
+            KafkaSender<Integer, byte[]> kafkaSender,
+            @Value("${httprelay.server.port}") Integer port,
+            @Value("${httprelay.server.username}") String username,
+            @Value("${httprelay.server.password}") String password // hashed password
+    ) {
         this.kafkaSender = kafkaSender;
-        UsernamePasswordMetadata user = new UsernamePasswordMetadata("user", "user");
+        //UsernamePasswordMetadata user = new UsernamePasswordMetadata("user", "user");
+        UsernamePasswordMetadata user = new UsernamePasswordMetadata(username, password);
+
         this.requester = builder
                 .setupMetadata(user, SIMPLE_AUTH)
                 .rsocketConnector(rSocketConnector -> rSocketConnector.reconnect(RETRY_BACKOFF_SPEC))
